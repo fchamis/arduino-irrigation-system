@@ -10,7 +10,7 @@ int pinPump = 7;
 int pinSensor = A0;
 int pinPot = A2;
 //how many seconds should we turn on the pump
-int pumpTime = 5000;
+int pumpTime = 1000;
 //how many times should we check the water level whe the pump is turned on
 int pumpCheckTime = 5;
 
@@ -30,14 +30,32 @@ void setup(){
   pinMode(pinPot, INPUT);
   pinMode(pinPump, OUTPUT);
   
+  digitalWrite(pinPump, HIGH);
+  Serial.println("pump is OFF");
+  
 }
 
 void loop(){
+
+  /*
+  //relay TEST
+  Serial.println("Turn pump ON");
+  digitalWrite(pinPump, LOW);
+  delay(5000);
+  Serial.println("Turn pump OFF");
+  digitalWrite(pinPump, HIGH);
+  delay(5000);
+  */
+
+  
   
   if(digitalRead(pinWater)==LOW){
     
     //we don't have water, let's call someone to bring us more :)
     Serial.println("water is LOW");
+    //turn the pump off at the end
+    digitalWrite(pinPump, HIGH);
+    Serial.println("pump is OFF");
     //buzzer();
     
   }else{
@@ -53,11 +71,14 @@ void loop(){
     Serial.print("potValue: ");
     Serial.println(potValue);
 
-    if (sensorValue <= potValue) {
+    //potValue = 717
+    //sensorValue dry = 600
+    //sensorValue total dry = 1023
+    if (sensorValue >= potValue) {
       
       //the soil is dry, turn on the pump for some seconds and turn it off
-      digitalWrite(pinPump, HIGH);
-      Serial.println("pump is HIGH");
+      digitalWrite(pinPump, LOW);
+      Serial.println("pump is ON");
       
       //we need to verify if the water ends while we pump is on
       pumpDelayTime = long(pumpTime/pumpCheckTime);
@@ -67,21 +88,29 @@ void loop(){
 
         //check the water level again to see if it's necessary to turn it off in the middle
         if(digitalRead(pinWater)==LOW){
-          Serial.println("water is LOW, so we need to send pump to LOW");
-          digitalWrite(pinPump, LOW);
+          Serial.println("water is LOW, so we need to turn pump OFF");
+          digitalWrite(pinPump, HIGH);
           break;
         }
         
       }
 
       //turn the pump off at the end
-      digitalWrite(pinPump, LOW);
-      Serial.println("pump is LOW");
+      digitalWrite(pinPump, HIGH);
+      Serial.println("pump is OFF");
+      
+    } else {
+
+      digitalWrite(pinPump, HIGH);
+      Serial.println("pump is OFF");
+      
     }
 
   }
   
-  delay(2000);
+  delay(10000);
+
+  
 
 }
 
